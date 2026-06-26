@@ -131,3 +131,35 @@ def test_leadlag_missing_series_errors(tmp_path, monkeypatch):
     res = runner.invoke(app, ["leadlag", str(tmp_path), "--term", "repair"])
     assert res.exit_code == 1
     assert "series" in res.stdout.lower()
+
+
+def test_suggest_writes_suggestions_idempotently(tmp_path, monkeypatch):
+    _study(tmp_path)
+    import vogue.cli as climod
+    from vogue.coding import Label
+
+    recs = [Record(source="gepris", id=str(i), title=f"t{i}", year=2020,
+                   discipline_raw="Ethnologie", field=Field.HUMANITIES, work_type="w", url="u")
+            for i in range(3)]
+    monkeypatch.setattr(pipeline, "fetch_term", lambda study, s, t, limit=None: recs)
+
+    class FakeSuggester:
+        def suggest(self, record, term):
+            return Label.TROPE
+    monkeypatch.setattr(climod, "_make_suggester", lambda model: FakeSuggester())
+
+    res = runner.invoke(app, ["suggest", str(tmp_path), "--source", "gepris",
+                              "--term", "repair", "--model", "fake"])
+    assert res.exit_code == 0
+    assert "suggested 3" in res.stdout
+
+    path = tmp_path / "codings" / "repair.suggestions.csv"
+    rows = list(_csv.DictReader(path.open(encoding="utf-8")))
+    assert {r["key"]: r["suggested"] for r in rows} == {
+        "gepris:0": "trope", "gepris:1": "trope", "gepris:2": "trope"}
+    assert all(r["model"] == "fake" for r in rows)
+
+    # idempotent: a second run suggests nothing new
+    res2 = runner.invoke(app, ["suggest", str(tmp_path), "--source", "gepris",
+                               "--term", "repair", "--model", "fake"])
+    assert "suggested 0" in res2.stdout

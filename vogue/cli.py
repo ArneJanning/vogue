@@ -3,6 +3,8 @@ import typer
 from vogue.study import Study
 from vogue import pipeline
 from vogue.coding import CodingStore, Coding, Label, uncoded
+from vogue.coding import SuggestionStore, Suggestion
+from vogue.suggest.core import LLMSuggester, BaselineSuggester, openrouter_complete
 from vogue.analysis import build_overlay, render_report, cross_correlate
 from vogue.plotting import plot_overlay
 
@@ -108,6 +110,37 @@ def leadlag(study_dir: str, term: str = typer.Option(...),
     typer.echo(
         f"{term}: '{lead}' {direction} '{lag}' by {abs(res.best_lag)} years "
         f"(r={res.best_corr:.2f}, method={method}, n={res.n_pairs})")
+
+
+def _make_suggester(model: str):
+    if model == "rules":
+        return BaselineSuggester()
+    return LLMSuggester(openrouter_complete(model))
+
+
+@app.command()
+def suggest(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...),
+            model: str = typer.Option("google/gemini-2.0-flash-001",
+                                      help="OpenRouter model slug, or 'rules' for the offline baseline"),
+            limit: int = typer.Option(None, help="cap records fetched")):
+    """Pre-label uncoded records with an LLM (via OpenRouter) into a side file.
+
+    Suggestions are never authoritative — `code` shows them as defaults for human confirmation.
+    Needs OPENROUTER_API_KEY for real models; use --model rules for an offline no-op baseline.
+    """
+    study = Study.load(study_dir)
+    records = pipeline.fetch_term(study, source, term, limit=limit)
+    kept = pipeline.funnel_for_records(records, study.keep_fields).kept
+    coded = CodingStore(study.codings_dir / f"{term}.csv").coded_keys()
+    sstore = SuggestionStore(study.codings_dir / f"{term}.suggestions.csv")
+    have = sstore.suggested_keys()
+    todo = [r for r in kept if r.key not in coded and r.key not in have]
+    suggester = _make_suggester(model)
+    today = datetime.date.today().isoformat()
+    for r in todo:
+        sstore.append(Suggestion(key=r.key, term=term, suggested=suggester.suggest(r, term),
+                                 model=model, suggested_at=today))
+    typer.echo(f"suggested {len(todo)} records ({len(have)} already had suggestions)")
 
 
 if __name__ == "__main__":
