@@ -2,7 +2,7 @@
 
 Track the **Begriffskonjunktur** — the rise-and-fall lifecycle of a scholarly concept ("trope") — across funded research and publications.
 
-> **Status: v0.1.** GEPRIS (DFG funding) and OpenAlex (publications) sources, discipline filtering, human coding, and the funding-vs-publication overlay are implemented and tested. Lead-lag estimation and LLM-assisted coding are planned for v0.2. APIs may still change.
+> **Status: v0.2 in progress.** v0.1 — GEPRIS (DFG funding) and OpenAlex (publications) sources, discipline filtering, human coding, and the funding-vs-publication overlay — is complete and tested. Detrended **lead-lag estimation** (`vogue leadlag`) has landed; LLM-assisted coding is still planned. APIs may still change.
 
 ## Why vogue exists
 
