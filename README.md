@@ -68,6 +68,20 @@ file and are never authoritative — `code` shows each as a default you confirm 
 
 The overlay normalizes each series to its own peak, so curves of wildly different magnitude (a dozen funded projects vs. millions of publications) can be compared by *shape* — which is where any lead-lag between publication fashion and funding would show. The `openalex:raw` curve is raw word-prevalence by year (cheap, via `group_by`); `:coded_trope` reflects only what a human has labeled `trope`.
 
+## Limitations
+
+- **GEPRIS exposes project *counts*, not funding amounts.** Verified across project types: DFG
+  project pages carry only `DFG-Verfahren`, subject area, funding *period*, and a project id —
+  there is no per-grant `Fördersumme`. So funding curves are counts of funded projects per year,
+  never euros. (The DFG is aggregate-transparent via the *Förderatlas* but, unlike NIH RePORTER,
+  NSF, EU CORDIS or UKRI Gateway to Research, does not publish per-grant amounts — a real
+  transparency gap, and itself a datum about the funder.)
+- **OpenAlex `search` is broad and relevance-ranked**; a year-stratified fetch is needed for a
+  year-representative publication curve (the shipped examples use a capped relevance sample).
+- **The trope count is only as good as the coding.** It is human judgment, borderline-sensitive at
+  small N; the shipped example codings were done by an AI agent and are demonstrations, not
+  validated results.
+
 ## Documentation
 
 - Design spec: [`docs/superpowers/specs/2026-06-26-vogue-design.md`](docs/superpowers/specs/2026-06-26-vogue-design.md)
