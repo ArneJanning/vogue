@@ -1,0 +1,8 @@
+terms:
+  - name: kulturtechnik
+    notes: >
+      The media-theory "Kulturtechnik" (cultural techniques) of the Siegert/Schuettpelz school,
+      vs the older homonym (agricultural/civil engineering: land melioration, water management).
+    queries:
+      gepris: Kulturtechnik
+      openalex: Kulturtechniken
