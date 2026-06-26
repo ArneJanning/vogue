@@ -14,8 +14,8 @@ The motivating finding: a *trope is not a word*. The same string (`repair`) inde
 
 ## 2. Scope
 
-- **v0.1:** Two sources at launch — **GEPRIS** (DFG funded projects) and **OpenAlex** (publications). Funnel, human coding, analysis including funding-vs-publication lead-lag, plus the `repair` study shipped as a worked example.
-- **v0.2:** Optional LLM-assisted pre-classification (`suggest`).
+- **v0.1:** Two sources at launch — **GEPRIS** (DFG funded projects) and **OpenAlex** (publications). Funnel, human coding, analysis with the funding and publication curves **overlaid**, plus the `repair` study shipped as a worked example.
+- **v0.2:** Estimated funding-vs-publication **lead-lag** (cross-correlation), and optional LLM-assisted pre-classification (`suggest`).
 - **Later:** Web UI for coding, layered over the same plaintext files.
 
 Out of scope for now: Crossref, Google Books Ngrams, multi-user/hosted services.
@@ -52,11 +52,11 @@ A pydantic v2 model that every source normalizes to:
 
 ```
 my-study/
-  study.yaml          # name, enabled sources, fields-to-keep (e.g. [humanities, social])
+  study.yaml          # name, enabled sources, fields-to-keep (default [humanities])
   terms.yaml          # terms, each with optional per-source query overrides + notes
   disciplines.yaml    # mapping overrides; shipped defaults cover GEPRIS + OpenAlex
   cache/              # raw fetches, per source+term+query, date-stamped; snapshot-freezable
-  codings/<term>.csv  # key, term, label{trope|homonym|literal|unsure}, suggested, coder, coded_at, note
+  codings/<term>.csv  # key, term, label{trope|adjacent|homonym|literal|unsure}, suggested, coder, coded_at, note
   out/                # generated tables + figures
 ```
 
@@ -96,15 +96,16 @@ Each adapter owns its pagination, polite rate-limiting, and on-disk caching of r
 ## 7. Pipeline / funnel
 
 - **`fetch`** — for each term × enabled source: query, paginate, cache raw responses, normalize to records. Polite rate-limiting; resumable from cache.
-- **Funnel** — Stage A (raw) → Stage B (discipline filter: keep records whose `field` ∈ study's keep-set) → Stage C (coded: join with `codings/`).
-- **`code`** — surfaces Stage-B records lacking a label; shows title / discipline_raw / year / url; one keystroke assigns `trope|homonym|literal|unsure`. **Idempotent**: each run only surfaces new records; reports "X new to code, Y already coded." Appends to `codings/<term>.csv`.
+- **Funnel** — Stage A (raw) → Stage B (discipline filter: keep records whose `field` ∈ study's keep-set; default `[humanities]`) → Stage C (coded: join with `codings/`).
+- **`code`** — surfaces Stage-B records lacking a label; shows title / discipline_raw / year / url; one keystroke assigns `trope|adjacent|homonym|literal|unsure` (`adjacent` = same fashion-family but not the term itself, e.g. "maintenance" relative to the repair turn). **Idempotent**: each run only surfaces new records; reports "X new to code, Y already coded." Appends to `codings/<term>.csv`.
 - **`suggest`** (v0.2) — fills the `suggested` column via a configurable LLM provider (rule-based fallback). `code` then offers the suggestion as default (Enter = accept). Suggestion and human label are stored in separate columns so provenance is auditable; model id + timestamp recorded.
 
 ## 8. Analysis outputs
 
 - **Funnel report** per term: raw N → discipline-filtered N → trope-coded N (counts + %). (Repair: 1955 → 40 → ~13.)
 - **Time series** at each funnel stage; normalization selectable: absolute, share-within-study, or vs a baseline series (to control the database/funding growth confound).
-- **Cross-source lead-lag**: GEPRIS funding-start-year vs OpenAlex publication-year, overlaid; cross-correlation peak estimates "publications lead funding by ~k years." This is the analysis that makes the acceleration thesis testable — funding start-years alone are right-censored.
+- **Cross-source overlay (v0.1)**: GEPRIS funding-start-year vs OpenAlex publication-year, plotted on shared axes. The visual lead is what makes the acceleration thesis approachable — funding start-years alone are right-censored.
+- **Estimated lead-lag (v0.2)**: cross-correlation peak → "publications lead funding by ~k years." Deferred because it means estimating a shift between two thin, right-censored series and deserves its own careful treatment.
 - **`report`** — one command emits Markdown with embedded figures + funnel tables, paste-ready for a paper.
 - Exports: tidy CSV/Parquet; figures as PNG/SVG.
 
@@ -124,7 +125,7 @@ Each adapter owns its pagination, polite rate-limiting, and on-disk caching of r
 
 ## 10. Disambiguation philosophy (invariant, restated)
 
-The tool's headline number is the **coded** count. Word-level and discipline-level counts exist only as funnel stages, always shown alongside the coded figure. The codebook (label definitions for `trope/homonym/literal/unsure`) ships in the repo and is part of any study's citable record.
+The tool's headline number is the **coded** count. Word-level and discipline-level counts exist only as funnel stages, always shown alongside the coded figure. The codebook (label definitions for `trope/adjacent/homonym/literal/unsure`) ships in the repo and is part of any study's citable record.
 
 ## 11. Testing & reproducibility
 
@@ -139,6 +140,6 @@ Python ≥ 3.11 · httpx · pydantic v2 · typer · pandas · duckdb (analysis o
 
 ## 13. Release roadmap
 
-- **v0.1** — GEPRIS + OpenAlex, funnel, coding, analysis incl. lead-lag, repair example, tests, CI.
-- **v0.2** — LLM `suggest` plugin.
+- **v0.1** — GEPRIS + OpenAlex, funnel, coding (`trope/adjacent/homonym/literal/unsure`), analysis with overlaid funding/publication curves, repair example, tests, CI.
+- **v0.2** — estimated lead-lag (cross-correlation); LLM `suggest` plugin.
 - **Later** — web UI over the same files; additional sources (Crossref, Ngrams).
