@@ -3,6 +3,8 @@ import typer
 from vogue.study import Study
 from vogue import pipeline
 from vogue.coding import CodingStore, Coding, Label, uncoded
+from vogue.analysis import build_overlay, render_report
+from vogue.plotting import plot_overlay
 
 app = typer.Typer(help="Track the Begriffskonjunktur of scholarly concepts.")
 
@@ -69,6 +71,20 @@ def tally(study_dir: str, source: str = typer.Option(...), term: str = typer.Opt
              f"coded={sum(counts.values())}"]
     parts += [f"{lab.value}={counts.get(lab, 0)}" for lab in Label]
     typer.echo("  ".join(parts))
+
+
+@app.command()
+def report(study_dir: str, term: str = typer.Option(...),
+           limit: int = typer.Option(2000, help="cap per-source fetch for the coded subset")):
+    """Build the overlay (raw + coded curves) and write out/<term>-report.md + figure."""
+    study = Study.load(study_dir)
+    overlay = build_overlay(study, term, limit=limit)
+    study.out_dir.mkdir(parents=True, exist_ok=True)
+    fig = study.out_dir / f"{term}-overlay.png"
+    plot_overlay(overlay, fig)
+    md = study.out_dir / f"{term}-report.md"
+    md.write_text(render_report(overlay, fig.name), encoding="utf-8")
+    typer.echo(f"wrote {md} and {fig}")
 
 
 if __name__ == "__main__":

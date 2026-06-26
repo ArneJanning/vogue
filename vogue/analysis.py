@@ -49,3 +49,23 @@ def build_overlay(study: Study, term: str, limit: int | None = None,
     # drop empty series so the report/figure stay clean
     ov.series = {k: v for k, v in ov.series.items() if v}
     return ov
+
+
+def render_report(overlay: Overlay, figure_name: str) -> str:
+    """Markdown report: a header, the embedded figure, and a year x series table.
+    The headline is always the coded count — raw series are labeled as raw."""
+    years = overlay.years()
+    names = list(overlay.series)
+    lines = [f"# {overlay.term}", "", f"![{overlay.term} normalized curves]({figure_name})", ""]
+    if years:
+        lines.append("| year | " + " | ".join(names) + " |")
+        lines.append("|---|" + "|".join(["---"] * len(names)) + "|")
+        for y in years:
+            cells = " | ".join(str(overlay.series[n].get(y, 0)) for n in names)
+            lines.append(f"| {y} | {cells} |")
+    else:
+        lines.append("_No data._")
+    lines += ["", "Series ending in `:raw` are raw word-prevalence counts (uncoded); "
+              "`:coded_trope` are human-coded trope counts; `:discipline` are "
+              "discipline-filtered counts. The honest figure is the coded one."]
+    return "\n".join(lines) + "\n"

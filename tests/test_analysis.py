@@ -1,7 +1,8 @@
 from collections import Counter
 from vogue.model import Record, Field
 from vogue.coding import Coding, Label
-from vogue.analysis import year_counts_of_records, coded_year_counts, build_overlay, Overlay
+from vogue.analysis import (
+    year_counts_of_records, coded_year_counts, build_overlay, Overlay, render_report)
 
 
 def _rec(pid, year, field=Field.HUMANITIES):
@@ -56,3 +57,12 @@ def test_build_overlay_assembles_series(tmp_path, monkeypatch):
     assert ov.series["openalex:coded_trope"] == {2017: 1}
     assert ov.series["openalex:raw"] == {2016: 100, 2017: 200}
     assert ov.years() == [2016, 2017, 2019]
+
+
+def test_render_report_contains_series_and_figure():
+    ov = Overlay(term="repair", series={"gepris:coded_trope": {2019: 1, 2021: 3}})
+    md = render_report(ov, "repair-overlay.png")
+    assert "# repair" in md
+    assert "gepris:coded_trope" in md
+    assert "![" in md and "repair-overlay.png" in md   # embedded figure
+    assert "2019" in md and "2021" in md

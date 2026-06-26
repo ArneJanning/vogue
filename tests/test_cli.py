@@ -86,3 +86,16 @@ def test_funnel_limit_option(tmp_path, monkeypatch):
                               "--term", "repair", "--limit", "7"])
     assert res.exit_code == 0
     assert seen["limit"] == 7
+
+
+def test_report_command_writes_files(tmp_path, monkeypatch):
+    _study(tmp_path)
+    import vogue.cli as climod
+    from vogue.analysis import Overlay
+    monkeypatch.setattr(climod, "build_overlay",
+                        lambda study, term, limit=None: Overlay(
+                            term="repair", series={"gepris:coded_trope": {2020: 2}}))
+    res = runner.invoke(app, ["report", str(tmp_path), "--term", "repair"])
+    assert res.exit_code == 0
+    assert (tmp_path / "out" / "repair-report.md").exists()
+    assert (tmp_path / "out" / "repair-overlay.png").exists()
