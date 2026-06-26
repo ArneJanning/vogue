@@ -7,7 +7,7 @@ name = "vogue-tracker"
 version = "0.1.0.dev0"
 description = "Track the Begriffskonjunktur of scholarly concepts across funding and publications"
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2.6", "httpx>=0.27", "PyYAML>=6.0", "typer>=0.12"]
+dependencies = ["pydantic>=2.6", "httpx>=0.27", "PyYAML>=6.0", "typer>=0.12", "matplotlib>=3.8"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.5"]
