@@ -126,26 +126,33 @@ def _make_suggester(model: str):
 
 @app.command()
 def suggest(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...),
-            model: str = typer.Option("z-ai/glm-5.2",
-                                      help="OpenRouter model slug, or 'rules' for the offline baseline"),
+            model: str = typer.Option(None,
+                                      help="OpenRouter model slug (default: study.yaml suggest_model), "
+                                           "or 'rules' for the offline baseline"),
             limit: int = typer.Option(None, help="cap records fetched")):
     """Pre-label uncoded records with an LLM (via OpenRouter) into a side file.
 
     Suggestions are never authoritative — `code` shows them as defaults for human confirmation.
+    The model comes from study.yaml (`suggest_model`) unless --model overrides it.
     Needs OPENROUTER_API_KEY for real models; use --model rules for an offline no-op baseline.
     """
     study = Study.load(study_dir)
+    resolved_model = model or study.suggest_model
+    try:
+        suggester = _make_suggester(resolved_model)
+    except RuntimeError as e:
+        typer.echo(str(e))
+        raise typer.Exit(1)
     records = pipeline.fetch_term(study, source, term, limit=limit)
     kept = pipeline.funnel_for_records(records, study.keep_fields).kept
     coded = CodingStore(study.codings_dir / f"{term}.csv").coded_keys()
     sstore = SuggestionStore(study.codings_dir / f"{term}.suggestions.csv")
     have = sstore.suggested_keys()
     todo = [r for r in kept if r.key not in coded and r.key not in have]
-    suggester = _make_suggester(model)
     today = datetime.date.today().isoformat()
     for r in todo:
         sstore.append(Suggestion(key=r.key, term=term, suggested=suggester.suggest(r, term),
-                                 model=model, suggested_at=today))
+                                 model=resolved_model, suggested_at=today))
     typer.echo(f"suggested {len(todo)} records ({len(have)} already had suggestions)")
 
 

@@ -1,4 +1,5 @@
 import httpx
+import pytest
 from vogue.model import Record, Field
 from vogue.coding import Label
 from vogue.suggest.core import (parse_label, build_prompt, LLMSuggester,
@@ -51,3 +52,9 @@ def test_openrouter_complete_posts_and_reads_choice():
     assert captured["auth"] == "Bearer sk-x"
     assert captured["body"]["model"] == "google/gemini-2.0-flash-001"
     assert captured["body"]["messages"][0]["content"] == "hello?"
+
+
+def test_openrouter_complete_requires_key(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="OPENROUTER_API_KEY"):
+        openrouter_complete("z-ai/glm-5.2")

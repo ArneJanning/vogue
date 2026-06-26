@@ -185,3 +185,38 @@ def test_code_uses_suggestion_as_default(tmp_path, monkeypatch):
     assert rows[0]["key"] == "gepris:0"
     assert rows[0]["label"] == "trope"
     assert rows[0]["suggested"] == "trope"   # model suggestion preserved as provenance
+
+
+def test_suggest_resolves_model_from_study(tmp_path, monkeypatch):
+    (tmp_path / "study.yaml").write_text(
+        "name: d\nsources: [gepris]\nsuggest_model: my/model\n", encoding="utf-8")
+    (tmp_path / "terms.yaml").write_text("terms: [{name: repair}]\n", encoding="utf-8")
+    import vogue.cli as climod
+    from vogue.coding import Label
+    recs = [Record(source="gepris", id="0", title="t", year=2020, discipline_raw="Ethnologie",
+                   field=Field.HUMANITIES, work_type="w", url="u")]
+    monkeypatch.setattr(pipeline, "fetch_term", lambda study, s, t, limit=None: recs)
+    seen = {}
+
+    class Fake:
+        def suggest(self, record, term):
+            return Label.TROPE
+    def fake_make(model):
+        seen["model"] = model
+        return Fake()
+    monkeypatch.setattr(climod, "_make_suggester", fake_make)
+
+    res = runner.invoke(app, ["suggest", str(tmp_path), "--source", "gepris", "--term", "repair"])
+    assert res.exit_code == 0
+    assert seen["model"] == "my/model"  # came from study.yaml, no --model given
+    rows = list(_csv.DictReader((tmp_path / "codings" / "repair.suggestions.csv").open()))
+    assert all(r["model"] == "my/model" for r in rows)
+
+
+def test_suggest_missing_key_errors_cleanly(tmp_path, monkeypatch):
+    _study(tmp_path)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    res = runner.invoke(app, ["suggest", str(tmp_path), "--source", "gepris",
+                              "--term", "repair", "--model", "z-ai/glm-5.2"])
+    assert res.exit_code == 1
+    assert "OPENROUTER_API_KEY" in res.stdout and "rules" in res.stdout

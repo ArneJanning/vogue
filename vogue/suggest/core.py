@@ -57,6 +57,10 @@ def openrouter_complete(model: str, api_key: str | None = None,
                         client: httpx.Client | None = None) -> Callable[[str], str]:
     """A `complete` callable backed by OpenRouter's OpenAI-compatible chat endpoint."""
     key = api_key if api_key is not None else os.environ.get("OPENROUTER_API_KEY", "")
+    if not key:
+        raise RuntimeError(
+            "OPENROUTER_API_KEY is not set. Export it, or use --model rules "
+            "for the offline baseline.")
     cl = client or httpx.Client(timeout=30)
 
     def complete(prompt: str) -> str:
