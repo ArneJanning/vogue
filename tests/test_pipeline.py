@@ -41,3 +41,20 @@ def test_source_for_knows_openalex(tmp_path):
     from vogue.pipeline import _source_for
     s = Study.load(tmp_path)
     assert _source_for("openalex", s).name == "openalex"
+
+
+def test_fetch_term_respects_limit(tmp_path, monkeypatch):
+    (tmp_path / "study.yaml").write_text("name: d\nsources: [gepris]\n", encoding="utf-8")
+    (tmp_path / "terms.yaml").write_text("terms: [{name: repair}]\n", encoding="utf-8")
+    from vogue.study import Study
+    import vogue.pipeline as pl
+
+    class FakeSrc:
+        name = "gepris"
+        def search(self, term):
+            for i in range(100):
+                yield _rec(str(i), Field.HUMANITIES)
+    monkeypatch.setattr(pl, "_source_for", lambda name, study: FakeSrc())
+    s = Study.load(tmp_path)
+    assert len(pl.fetch_term(s, "gepris", "repair", limit=5)) == 5
+    assert len(pl.fetch_term(s, "gepris", "repair")) == 100

@@ -13,10 +13,11 @@ def _main() -> None:
 
 
 @app.command()
-def funnel(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...)):
+def funnel(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...),
+           limit: int = typer.Option(None, help="cap records fetched (useful for huge OpenAlex result sets)")):
     """Fetch a term from a source and print the raw -> discipline funnel."""
     study = Study.load(study_dir)
-    records = pipeline.fetch_term(study, source, term)
+    records = pipeline.fetch_term(study, source, term, limit=limit)
     f = pipeline.funnel_for_records(records, study.keep_fields)
     typer.echo(f"{term} [{source}]  raw={f.raw}  discipline={f.discipline}")
 
@@ -27,13 +28,14 @@ KEYMAP = {"t": Label.TROPE, "a": Label.ADJACENT, "h": Label.HOMONYM,
 
 @app.command()
 def code(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...),
-         coder: str = typer.Option("", help="name recorded with each coding")):
+         coder: str = typer.Option("", help="name recorded with each coding"),
+         limit: int = typer.Option(None, help="cap records fetched (useful for huge OpenAlex result sets)")):
     """Interactively label discipline-filtered records as trope/adjacent/homonym/literal/unsure.
 
     Idempotent: only records without an existing coding are surfaced.
     """
     study = Study.load(study_dir)
-    records = pipeline.fetch_term(study, source, term)
+    records = pipeline.fetch_term(study, source, term, limit=limit)
     kept = pipeline.funnel_for_records(records, study.keep_fields).kept
     store = CodingStore(study.codings_dir / f"{term}.csv")
     already = store.coded_keys()
@@ -55,10 +57,11 @@ def code(study_dir: str, source: str = typer.Option(...), term: str = typer.Opti
 
 
 @app.command()
-def tally(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...)):
+def tally(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...),
+          limit: int = typer.Option(None, help="cap records fetched (useful for huge OpenAlex result sets)")):
     """Print the full funnel for a term: raw -> discipline -> coded, broken down by label."""
     study = Study.load(study_dir)
-    records = pipeline.fetch_term(study, source, term)
+    records = pipeline.fetch_term(study, source, term, limit=limit)
     funnel = pipeline.funnel_for_records(records, study.keep_fields)
     store = CodingStore(study.codings_dir / f"{term}.csv")
     counts = pipeline.coded_tally(funnel.kept, store.load())

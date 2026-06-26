@@ -1,3 +1,4 @@
+import itertools
 from collections import Counter
 from dataclasses import dataclass, field as dfield
 from vogue.model import Record, Field
@@ -29,14 +30,18 @@ def _source_for(name: str, study: Study):
     raise ValueError(f"unknown source: {name}")
 
 
-def fetch_term(study: Study, source_name: str, term_name: str) -> list[Record]:
-    """Fetch all records for one term from one source (cached)."""
+def fetch_term(study: Study, source_name: str, term_name: str,
+               limit: int | None = None) -> list[Record]:
+    """Fetch records for one term from one source (cached). `limit` bounds the iterator."""
     src = _source_for(source_name, study)
     term = next((t for t in study.terms if t.name == term_name), None)
     if term is None:
         raise ValueError(f"unknown term: {term_name}")
     query = term.queries.get(source_name, term.name)
-    return list(src.search(query))
+    it = src.search(query)
+    if limit is not None:
+        it = itertools.islice(it, limit)
+    return list(it)
 
 
 def funnel_term(study: Study, source_name: str, term_name: str) -> Funnel:
