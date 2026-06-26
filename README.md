@@ -39,7 +39,7 @@ uv run vogue --help       # CLI
 
 ```
 my-study/
-  study.yaml          # name, enabled sources, fields to keep (default [humanities])
+  study.yaml          # name, enabled sources, fields to keep (default [humanities]), suggest_model
   terms.yaml          # the terms to track
   disciplines.yaml    # optional discipline-mapping overrides
   cache/              # raw fetched responses (git-ignored; snapshot-freezable)
@@ -62,8 +62,9 @@ uv run vogue leadlag my-study --term repair                   # detrended cross-
 ```
 
 `suggest` needs `OPENROUTER_API_KEY` (or use `--model rules` for an offline no-op baseline);
-its proposals are written to a side file and are never authoritative — `code` shows each as a
-default you confirm with one keystroke, and the model's guess is kept only as provenance.
+the model comes from `suggest_model:` in `study.yaml` (default `z-ai/glm-5.2`) unless `--model`
+overrides it, and is recorded per suggestion for provenance. Its proposals are written to a side
+file and are never authoritative — `code` shows each as a default you confirm with one keystroke.
 
 The overlay normalizes each series to its own peak, so curves of wildly different magnitude (a dozen funded projects vs. millions of publications) can be compared by *shape* — which is where any lead-lag between publication fashion and funding would show. The `openalex:raw` curve is raw word-prevalence by year (cheap, via `group_by`); `:coded_trope` reflects only what a human has labeled `trope`.
 
