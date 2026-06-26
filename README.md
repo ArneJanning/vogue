@@ -2,7 +2,7 @@
 
 Track the **Begriffskonjunktur** — the rise-and-fall lifecycle of a scholarly concept ("trope") — across funded research and publications.
 
-> **Status: v0.2 in progress.** v0.1 — GEPRIS (DFG funding) and OpenAlex (publications) sources, discipline filtering, human coding, and the funding-vs-publication overlay — is complete and tested. Detrended **lead-lag estimation** (`vogue leadlag`) has landed; LLM-assisted coding is still planned. APIs may still change.
+> **Status: v0.2.** v0.1 — GEPRIS (DFG funding) and OpenAlex (publications) sources, discipline filtering, human coding, and the funding-vs-publication overlay — plus detrended **lead-lag estimation** (`vogue leadlag`) and optional **LLM-assisted coding** (`vogue suggest`, via OpenRouter; human-confirmed). 50 tests. APIs may still change.
 
 ## Why vogue exists
 
@@ -52,11 +52,18 @@ Everything but `cache/` and `out/` is plaintext and git-tracked, so a study is a
 ## CLI
 
 ```bash
-uv run vogue funnel my-study --source gepris --term repair   # raw -> discipline
-uv run vogue code   my-study --source gepris --term repair   # interactively label the residue
-uv run vogue tally  my-study --source gepris --term repair   # raw -> discipline -> coded, by label
-uv run vogue report my-study --term repair --limit 2000      # funding-vs-publication overlay + report
+uv run vogue funnel  my-study --source gepris --term repair   # raw -> discipline
+uv run vogue suggest my-study --source gepris --term repair   # optional: LLM pre-labels (OpenRouter)
+uv run vogue code    my-study --source gepris --term repair   # confirm/label the residue (1 keystroke)
+uv run vogue tally   my-study --source gepris --term repair   # raw -> discipline -> coded, by label
+uv run vogue report  my-study --term repair --limit 2000      # funding-vs-publication overlay + report
+uv run vogue leadlag my-study --term repair                   # detrended cross-correlation: does
+                                                              # publication fashion precede funding?
 ```
+
+`suggest` needs `OPENROUTER_API_KEY` (or use `--model rules` for an offline no-op baseline);
+its proposals are written to a side file and are never authoritative — `code` shows each as a
+default you confirm with one keystroke, and the model's guess is kept only as provenance.
 
 The overlay normalizes each series to its own peak, so curves of wildly different magnitude (a dozen funded projects vs. millions of publications) can be compared by *shape* — which is where any lead-lag between publication fashion and funding would show. The `openalex:raw` curve is raw word-prevalence by year (cheap, via `group_by`); `:coded_trope` reflects only what a human has labeled `trope`.
 
