@@ -16,12 +16,13 @@ class PageCache:
     def __init__(self, root: Path):
         self.root = Path(root)
 
-    def _path(self, source: str, term: str, page: int) -> Path:
+    def _path(self, source: str, term: str, page: int, ext: str = "html") -> Path:
         h = hashlib.sha1(term.encode("utf-8")).hexdigest()[:12]
-        return self.root / source / f"{h}_{page:05d}.html"
+        return self.root / source / f"{h}_{page:05d}.{ext}"
 
-    def get_or_fetch(self, source: str, term: str, page: int, fetch: Callable[[], str]) -> str:
-        p = self._path(source, term, page)
+    def get_or_fetch(self, source: str, term: str, page: int,
+                     fetch: Callable[[], str], ext: str = "html") -> str:
+        p = self._path(source, term, page, ext)
         if p.exists():
             return p.read_text(encoding="utf-8")
         text = fetch()
