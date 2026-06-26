@@ -99,3 +99,35 @@ def test_report_command_writes_files(tmp_path, monkeypatch):
     assert res.exit_code == 0
     assert (tmp_path / "out" / "repair-report.md").exists()
     assert (tmp_path / "out" / "repair-overlay.png").exists()
+
+
+def test_leadlag_command_reports_lag(tmp_path, monkeypatch):
+    _study(tmp_path)
+    import vogue.cli as climod
+    from vogue.analysis import Overlay
+
+    def bump(center, lo=2000, hi=2020):
+        return {y: max(0, 10 - abs(y - center)) for y in range(lo, hi + 1)}
+
+    ov = Overlay(term="repair", series={
+        "gepris:coded_trope": bump(2010),     # lags
+        "openalex:raw": bump(2007),           # leads by 3
+    })
+    monkeypatch.setattr(climod, "build_overlay", lambda study, term, limit=None: ov)
+
+    res = runner.invoke(app, ["leadlag", str(tmp_path), "--term", "repair",
+                              "--lead", "openalex:raw", "--lag", "gepris:coded_trope"])
+    assert res.exit_code == 0
+    assert "by 3 years" in res.stdout
+    assert "openalex:raw" in res.stdout and "gepris:coded_trope" in res.stdout
+
+
+def test_leadlag_missing_series_errors(tmp_path, monkeypatch):
+    _study(tmp_path)
+    import vogue.cli as climod
+    from vogue.analysis import Overlay
+    monkeypatch.setattr(climod, "build_overlay",
+                        lambda study, term, limit=None: Overlay(term="repair", series={}))
+    res = runner.invoke(app, ["leadlag", str(tmp_path), "--term", "repair"])
+    assert res.exit_code == 1
+    assert "series" in res.stdout.lower()

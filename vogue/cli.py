@@ -3,7 +3,7 @@ import typer
 from vogue.study import Study
 from vogue import pipeline
 from vogue.coding import CodingStore, Coding, Label, uncoded
-from vogue.analysis import build_overlay, render_report
+from vogue.analysis import build_overlay, render_report, cross_correlate
 from vogue.plotting import plot_overlay
 
 app = typer.Typer(help="Track the Begriffskonjunktur of scholarly concepts.")
@@ -85,6 +85,29 @@ def report(study_dir: str, term: str = typer.Option(...),
     md = study.out_dir / f"{term}-report.md"
     md.write_text(render_report(overlay, fig.name), encoding="utf-8")
     typer.echo(f"wrote {md} and {fig}")
+
+
+@app.command()
+def leadlag(study_dir: str, term: str = typer.Option(...),
+            lead: str = typer.Option("openalex:raw", help="series expected to lead"),
+            lag: str = typer.Option("gepris:coded_trope", help="series expected to lag"),
+            method: str = typer.Option("zscore", help="detrend: zscore|diff|peak|none"),
+            max_lag: int = typer.Option(8), limit: int = typer.Option(2000)):
+    """Estimate how many years `lead` precedes `lag` via detrended cross-correlation."""
+    study = Study.load(study_dir)
+    overlay = build_overlay(study, term, limit=limit)
+    a, b = overlay.series.get(lag), overlay.series.get(lead)
+    if not a or not b:
+        typer.echo(f"need both series present; available: {sorted(overlay.series)}")
+        raise typer.Exit(1)
+    res = cross_correlate(a, b, max_lag=max_lag, method=method)
+    if res is None:
+        typer.echo("insufficient overlapping data for a lead-lag estimate")
+        raise typer.Exit(1)
+    direction = "leads" if res.best_lag >= 0 else "lags"
+    typer.echo(
+        f"{term}: '{lead}' {direction} '{lag}' by {abs(res.best_lag)} years "
+        f"(r={res.best_corr:.2f}, method={method}, n={res.n_pairs})")
 
 
 if __name__ == "__main__":
