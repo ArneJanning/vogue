@@ -70,3 +70,17 @@ def test_search_pages_by_cursor_and_dedupes(tmp_path: Path):
     recs = list(src.search("repair"))
     assert [r.id for r in recs] == ["W1", "W2", "W3"]
     assert all(r.source == "openalex" for r in recs)
+
+
+def test_counts_by_year_via_group_by(tmp_path):
+    def handler(request):
+        if request.url.params.get("group_by") == "publication_year":
+            return httpx.Response(200, json={"group_by": [
+                {"key": "2020", "key_display_name": "2020", "count": 10},
+                {"key": "2021", "key_display_name": "2021", "count": 25},
+                {"key": "unknown", "key_display_name": "unknown", "count": 3},
+            ]})
+        return httpx.Response(200, json={"meta": {"count": 0, "next_cursor": None}, "results": []})
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    src = OpenAlexSource(PageCache(tmp_path), client=client, delay=0)
+    assert src.counts_by_year("repair") == {2020: 10, 2021: 25}  # non-numeric "unknown" dropped

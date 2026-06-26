@@ -66,6 +66,22 @@ class OpenAlexSource:
     def count(self, term: str) -> int:
         return self._page(term, "*", 0)["meta"]["count"]
 
+    def counts_by_year(self, term: str) -> dict[int, int]:
+        """Raw publication count per year via OpenAlex group_by (one request, no paging)."""
+        def fetch() -> str:
+            r = self.client.get(BASE, params={
+                "search": term, "group_by": "publication_year", "mailto": self.mailto})
+            r.raise_for_status()
+            return r.text
+        text = self.cache.get_or_fetch(self.name, f"{term}::groupyear", 0, fetch, ext="json")
+        data = json.loads(text)
+        out: dict[int, int] = {}
+        for g in data.get("group_by", []):
+            key = str(g.get("key", ""))
+            if key.isdigit():
+                out[int(key)] = g["count"]
+        return out
+
     def search(self, term: str) -> Iterator[Record]:
         cursor = "*"
         page_index = 0
