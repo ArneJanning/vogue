@@ -1,7 +1,7 @@
 import re
 from typing import Iterator
 import httpx
-from vogue.model import Record, Field
+from vogue.model import Record
 from vogue.sources.base import PageCache
 from vogue.disciplines.classify import Classifier
 
