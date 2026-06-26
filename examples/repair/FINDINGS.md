@@ -12,6 +12,8 @@ lineages that merely share the word (conversation-analytic repair, organizationa
 repair, repairable-systems reliability, psycholinguistic self-repair, mood/alliance repair);
 **adjacent** = care / maintenance / "fixing"; **literal** = physical mending of an object.
 
+![repair coded trope by year — Anglophone publication (blue), one German grant in 2022 (red)](figures/repair-trope.png)
+
 ## The funnel (what the tool reports)
 
 ```

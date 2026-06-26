@@ -7,6 +7,8 @@ The media-theory `Kulturtechnik` of the Siegert/Schüttpelz school, GEPRIS + Ope
 **Coder caveat:** coded by an AI agent from titles/abstracts, not a domain expert; small N,
 borderline-sensitive. A worked demonstration, not a validated result.
 
+![Kulturtechnik coded trope by year — both curves crest at 2013](figures/kulturtechnik-trope.png)
+
 ## The funnel
 
 ```
