@@ -16,6 +16,7 @@ class Study(BaseModel):
     name: str
     sources: list[str]
     keep_fields: list[Field] = PField(default_factory=lambda: [Field.HUMANITIES])
+    suggest_model: str = "z-ai/glm-5.2"
     terms: list[Term] = PField(default_factory=list)
     discipline_overrides: list[dict] = PField(default_factory=list)
 
@@ -31,6 +32,7 @@ class Study(BaseModel):
         return cls(
             root=root, name=sy["name"], sources=sy["sources"],
             keep_fields=[Field(f) for f in sy.get("keep_fields", ["humanities"])],
+            suggest_model=sy.get("suggest_model", "z-ai/glm-5.2"),
             terms=[Term(**t) for t in ty.get("terms", [])],
             discipline_overrides=dy.get("overrides", []),
         )
