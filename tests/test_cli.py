@@ -49,3 +49,26 @@ def test_code_writes_labels_and_is_idempotent(tmp_path, monkeypatch):
     rows2 = list(_csv.DictReader(csv_path.open(encoding="utf-8")))
     assert {r["key"]: r["label"] for r in rows2} == {
         "gepris:0": "trope", "gepris:1": "homonym", "gepris:2": "literal"}
+
+
+def test_tally_reports_full_funnel(tmp_path, monkeypatch):
+    _study(tmp_path)
+    recs = [Record(source="gepris", id=str(i), title="t", year=2020, discipline_raw="d",
+                   field=(Field.HUMANITIES if i < 3 else Field.LIFE), work_type="w", url="u")
+            for i in range(5)]
+    monkeypatch.setattr(pipeline, "fetch_term", lambda study, s, t: recs)
+    codings_dir = tmp_path / "codings"
+    codings_dir.mkdir()
+    (codings_dir / "repair.csv").write_text(
+        "key,term,label,suggested,coder,coded_at,note\n"
+        "gepris:0,repair,trope,,,,\n"
+        "gepris:1,repair,homonym,,,,\n", encoding="utf-8")
+
+    res = runner.invoke(app, ["tally", str(tmp_path), "--source", "gepris", "--term", "repair"])
+    assert res.exit_code == 0
+    assert "raw=5" in res.stdout
+    assert "discipline=3" in res.stdout
+    assert "coded=2" in res.stdout
+    assert "trope=1" in res.stdout
+    assert "homonym=1" in res.stdout
+    assert "literal=0" in res.stdout

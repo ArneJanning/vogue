@@ -54,5 +54,19 @@ def code(study_dir: str, source: str = typer.Option(...), term: str = typer.Opti
     typer.echo("done")
 
 
+@app.command()
+def tally(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...)):
+    """Print the full funnel for a term: raw -> discipline -> coded, broken down by label."""
+    study = Study.load(study_dir)
+    records = pipeline.fetch_term(study, source, term)
+    funnel = pipeline.funnel_for_records(records, study.keep_fields)
+    store = CodingStore(study.codings_dir / f"{term}.csv")
+    counts = pipeline.coded_tally(funnel.kept, store.load())
+    parts = [f"{term} [{source}]", f"raw={funnel.raw}", f"discipline={funnel.discipline}",
+             f"coded={sum(counts.values())}"]
+    parts += [f"{lab.value}={counts.get(lab, 0)}" for lab in Label]
+    typer.echo("  ".join(parts))
+
+
 if __name__ == "__main__":
     app()
