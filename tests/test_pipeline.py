@@ -32,3 +32,12 @@ def test_coded_tally_counts_labels_of_kept():
     assert tally[Label.HOMONYM] == 1
     assert tally[Label.LITERAL] == 0
     assert sum(tally.values()) == 2  # uncoded records are not counted
+
+
+def test_source_for_knows_openalex(tmp_path):
+    (tmp_path / "study.yaml").write_text("name: d\nsources: [openalex]\n", encoding="utf-8")
+    (tmp_path / "terms.yaml").write_text("terms: [{name: repair}]\n", encoding="utf-8")
+    from vogue.study import Study
+    from vogue.pipeline import _source_for
+    s = Study.load(tmp_path)
+    assert _source_for("openalex", s).name == "openalex"

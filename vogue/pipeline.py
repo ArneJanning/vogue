@@ -4,6 +4,7 @@ from vogue.model import Record, Field
 from vogue.coding import Coding
 from vogue.sources.base import PageCache
 from vogue.sources.gepris import GeprisSource
+from vogue.sources.openalex import OpenAlexSource
 from vogue.study import Study
 
 
@@ -23,6 +24,8 @@ def funnel_for_records(records: list[Record], keep_fields: list[Field]) -> Funne
 def _source_for(name: str, study: Study):
     if name == "gepris":
         return GeprisSource(PageCache(study.cache_dir), classifier=study.classifier())
+    if name == "openalex":
+        return OpenAlexSource(PageCache(study.cache_dir), classifier=study.classifier())
     raise ValueError(f"unknown source: {name}")
 
 

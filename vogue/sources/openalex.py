@@ -1,5 +1,10 @@
+import json
+import time
+from typing import Iterator
+import httpx
 from vogue.model import Record
 from vogue.disciplines.classify import Classifier
+from vogue.sources.base import PageCache
 
 
 def reconstruct_abstract(inverted: dict | None) -> str | None:
@@ -30,3 +35,52 @@ def parse_work(work: dict, classifier: Classifier | None = None) -> Record:
         abstract=reconstruct_abstract(work.get("abstract_inverted_index")),
         raw=work,
     )
+
+
+BASE = "https://api.openalex.org/works"
+
+
+class OpenAlexSource:
+    name = "openalex"
+
+    def __init__(self, cache: PageCache, classifier: Classifier | None = None,
+                 client: httpx.Client | None = None, mailto: str = "vogue@example.org",
+                 per_page: int = 200, delay: float = 0.1):
+        self.cache = cache
+        self.classifier = classifier or Classifier.default()
+        self.client = client or httpx.Client(
+            headers={"User-Agent": "vogue (research)"}, timeout=40)
+        self.mailto = mailto
+        self.per_page = per_page
+        self.delay = delay
+
+    def _page(self, term: str, cursor: str, page_index: int) -> dict:
+        def fetch() -> str:
+            r = self.client.get(BASE, params={
+                "search": term, "per-page": self.per_page,
+                "cursor": cursor, "mailto": self.mailto})
+            r.raise_for_status()
+            return r.text
+        return json.loads(self.cache.get_or_fetch(self.name, term, page_index, fetch, ext="json"))
+
+    def count(self, term: str) -> int:
+        return self._page(term, "*", 0)["meta"]["count"]
+
+    def search(self, term: str) -> Iterator[Record]:
+        cursor = "*"
+        page_index = 0
+        seen: set[str] = set()
+        while cursor:
+            data = self._page(term, cursor, page_index)
+            results = data.get("results", [])
+            if not results:
+                break
+            for w in results:
+                rec = parse_work(w, self.classifier)
+                if rec.id not in seen:
+                    seen.add(rec.id)
+                    yield rec
+            cursor = data["meta"].get("next_cursor")
+            page_index += 1
+            if cursor and self.delay:
+                time.sleep(self.delay)
