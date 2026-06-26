@@ -1,5 +1,7 @@
+from collections import Counter
 from dataclasses import dataclass, field as dfield
 from vogue.model import Record, Field
+from vogue.coding import Coding
 from vogue.sources.base import PageCache
 from vogue.sources.gepris import GeprisSource
 from vogue.study import Study
@@ -36,3 +38,13 @@ def fetch_term(study: Study, source_name: str, term_name: str) -> list[Record]:
 
 def funnel_term(study: Study, source_name: str, term_name: str) -> Funnel:
     return funnel_for_records(fetch_term(study, source_name, term_name), study.keep_fields)
+
+
+def coded_tally(kept: list[Record], codings: dict[str, Coding]) -> Counter:
+    """Count labels among kept (discipline-filtered) records that have a coding. Stage C."""
+    c: Counter = Counter()
+    for r in kept:
+        cod = codings.get(r.key)
+        if cod is not None:
+            c[cod.label] += 1
+    return c
