@@ -126,7 +126,7 @@ def _make_suggester(model: str):
 
 @app.command()
 def suggest(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...),
-            model: str = typer.Option("google/gemini-2.0-flash-001",
+            model: str = typer.Option("z-ai/glm-5.2",
                                       help="OpenRouter model slug, or 'rules' for the offline baseline"),
             limit: int = typer.Option(None, help="cap records fetched")):
     """Pre-label uncoded records with an LLM (via OpenRouter) into a side file.
