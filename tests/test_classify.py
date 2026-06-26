@@ -19,3 +19,17 @@ def test_unknown_when_no_rule_matches():
 def test_overrides_take_precedence():
     c = Classifier.default().with_overrides([{"match": "Psychologie", "field": "social"}])
     assert c.classify("Psychologie") is Field.SOCIAL
+
+
+def test_openalex_english_fields():
+    c = Classifier.default()
+    assert c.classify("Arts and Humanities") is Field.HUMANITIES
+    assert c.classify("Social Sciences") is Field.SOCIAL
+    assert c.classify("Economics, Econometrics and Finance") is Field.SOCIAL
+    assert c.classify("Medicine") is Field.LIFE
+    assert c.classify("Neuroscience") is Field.LIFE
+    assert c.classify("Physics and Astronomy") is Field.PHYS
+    assert c.classify("Chemistry") is Field.PHYS
+    assert c.classify("Engineering") is Field.ENG
+    assert c.classify("Computer Science") is Field.ENG
+    assert c.classify("Materials Science") is Field.ENG

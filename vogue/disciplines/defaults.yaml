@@ -50,3 +50,31 @@ rules:
   - {match: "bauwesen", field: eng}
   - {match: "systemtechnik", field: eng}
   - {match: "verfahrenstechnik", field: eng}
+  # --- OpenAlex field.display_name (English, Scopus-derived) ---
+  - {match: "arts and humanities", field: humanities}
+  - {match: "social sciences", field: social}
+  - {match: "economics", field: social}
+  - {match: "business", field: social}
+  - {match: "decision sciences", field: social}
+  - {match: "psychology", field: social}
+  - {match: "medicine", field: life}
+  - {match: "biochemistry", field: life}
+  - {match: "agricultural and biological", field: life}
+  - {match: "immunology", field: life}
+  - {match: "neuroscience", field: life}
+  - {match: "pharmacology", field: life}
+  - {match: "nursing", field: life}
+  - {match: "veterinary", field: life}
+  - {match: "dentistry", field: life}
+  - {match: "health professions", field: life}
+  - {match: "environmental science", field: life}
+  - {match: "chemical engineering", field: eng}
+  - {match: "computer science", field: eng}
+  - {match: "materials science", field: eng}
+  - {match: "energy", field: eng}
+  - {match: "engineering", field: eng}
+  - {match: "physics and astronomy", field: phys}
+  - {match: "physics", field: phys}
+  - {match: "chemistry", field: phys}
+  - {match: "earth and planetary", field: phys}
+  - {match: "mathematics", field: phys}
