@@ -8,3 +8,5 @@ build/
 .venv/
 # study caches are reproducibility scaffolding, not source; ignore by default
 cache/
+# generated reports/figures; regenerate with `vogue report`
+out/

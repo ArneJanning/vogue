@@ -1,0 +1,10 @@
+terms:
+  - name: repair
+    notes: >
+      The "repair turn" in the humanities (maintenance/care/STS/heritage). In GEPRIS
+      the German keyword "Reparatur" is ~98% biomedical/engineering; even within the
+      humanities it is further polluted by conversation-analytic "repair" (linguistics)
+      and literal object repair (archaeology). The honest signal is the *coded* subset.
+    queries:
+      gepris: Reparatur
+      openalex: repair
