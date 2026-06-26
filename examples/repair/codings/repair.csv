@@ -1,0 +1,31 @@
+key,term,label,suggested,coder,coded_at,note
+gepris:5403370,repair,literal,,claude-agent,2026-06-26,mended Roman brooches (archaeology)
+gepris:33279334,repair,unsure,,claude-agent,2026-06-26,dendro/wood transport; no clear repair sense
+gepris:81426089,repair,homonym,,claude-agent,2026-06-26,history of DNA/mutation repair (biological sense)
+gepris:197545557,repair,unsure,,claude-agent,2026-06-26,history of technology transfer
+gepris:232500278,repair,literal,,claude-agent,2026-06-26,Latene wooden bridge (archaeology)
+gepris:229507021,repair,literal,,claude-agent,2026-06-26,Greek portraits reworked (art history)
+gepris:245437051,repair,homonym,,claude-agent,2026-06-26,interactional grammar / conversation-analytic repair
+gepris:413161127,repair,homonym,,claude-agent,2026-06-26,interactional linguistics
+gepris:457488187,repair,adjacent,,claude-agent,2026-06-26,maintenance studies (Wartung/Kreosot) - repair-family
+gepris:460302287,repair,homonym,,claude-agent,2026-06-26,syntactic repair / Optimality Theory
+gepris:508247139,repair,trope,,claude-agent,2026-06-26,BORDERLINE: lifecycle/repair lens on antiquity
+gepris:467892294,repair,adjacent,,claude-agent,2026-06-26,BORDERLINE: Fixing Futures - fixing/anticipation STS
+gepris:565290414,repair,unsure,,claude-agent,2026-06-26,Feeling climate change; repair sense unclear
+gepris:558107386,repair,unsure,,claude-agent,2026-06-26,coordination fund (admin sub-project)
+openalex:W1980298376,repair,homonym,,claude-agent,2026-06-26,Schegloff et al. - conversation-analytic repair (canonical)
+openalex:W2154399314,repair,homonym,,claude-agent,2026-06-26,monitoring/self-repair in speech (psycholinguistics)
+openalex:W2125570972,repair,homonym,,claude-agent,2026-06-26,repair in classroom talk (CA)
+openalex:W1976729764,repair,homonym,,claude-agent,2026-06-26,Schegloff - repair after next turn (CA)
+openalex:W1608241827,repair,homonym,,claude-agent,2026-06-26,cross-linguistic syntax and repair (CA)
+openalex:W1999480495,repair,homonym,,claude-agent,2026-06-26,other-initiated repair (CA)
+openalex:W2031522244,repair,homonym,,claude-agent,2026-06-26,open-class repair initiators (CA)
+openalex:W1994657794,repair,homonym,,claude-agent,2026-06-26,learner repair in immersion classrooms (SLA)
+openalex:W2043811195,repair,homonym,,claude-agent,2026-06-26,when others initiate repair (CA)
+openalex:W639838900,repair,trope,,claude-agent,2026-06-26,Nelson - narrative repair of damaged identities (concept)
+openalex:W2082564948,repair,trope,,claude-agent,2026-06-26,social repair / transitional justice (concept)
+openalex:W2172941054,repair,trope,,claude-agent,2026-06-26,Nelson - Damaged Identities Narrative Repair (dup, concept)
+openalex:W2144352500,repair,homonym,,claude-agent,2026-06-26,repair for classroom correction (CA)
+openalex:W4391374887,repair,trope,,claude-agent,2026-06-26,Jackson - Rethinking Repair (STS repair turn)
+openalex:W4233546686,repair,trope,,claude-agent,2026-06-26,Jackson - Rethinking Repair / broken world thinking (STS)
+openalex:W1916508083,repair,homonym,,claude-agent,2026-06-26,universal principles in repair of communication (typology)
