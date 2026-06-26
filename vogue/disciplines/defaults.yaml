@@ -1,0 +1,52 @@
+# Ordered rules; first case-insensitive substring match on discipline_raw wins.
+# Humanities first so specific GSW terms win before broad ones.
+rules:
+  - {match: "geschichte", field: humanities}
+  - {match: "kunst", field: humanities}
+  - {match: "musikwiss", field: humanities}
+  - {match: "theater", field: humanities}
+  - {match: "medienwiss", field: humanities}
+  - {match: "sprachwiss", field: humanities}
+  - {match: "linguist", field: humanities}
+  - {match: "literaturwiss", field: humanities}
+  - {match: "philolog", field: humanities}
+  - {match: "ethnolog", field: humanities}
+  - {match: "kulturanthrop", field: humanities}
+  - {match: "außereurop", field: humanities}
+  - {match: "judaist", field: humanities}
+  - {match: "religionswiss", field: humanities}
+  - {match: "theolog", field: humanities}
+  - {match: "philosoph", field: humanities}
+  - {match: "archäolog", field: humanities}
+  - {match: "altertum", field: humanities}
+  - {match: "frühgesch", field: humanities}
+  - {match: "wissenschaftsgeschichte", field: humanities}
+  - {match: "erziehungswiss", field: social}
+  - {match: "bildungsforsch", field: social}
+  - {match: "soziolog", field: social}
+  - {match: "politikwiss", field: social}
+  - {match: "sozialwiss", field: social}
+  - {match: "empirische sozial", field: social}
+  - {match: "kommunikationswiss", field: social}
+  - {match: "wirtschaftswiss", field: social}
+  - {match: "volkswirt", field: social}
+  - {match: "rechtswiss", field: social}
+  - {match: "medizin", field: life}
+  - {match: "biologie", field: life}
+  - {match: "mikrobiologie", field: life}
+  - {match: "neurowiss", field: life}
+  - {match: "pflanzenwiss", field: life}
+  - {match: "agrar", field: life}
+  - {match: "chemie", field: phys}
+  - {match: "physik", field: phys}
+  - {match: "molekül", field: phys}
+  - {match: "geologie", field: phys}
+  - {match: "mineralogie", field: phys}
+  - {match: "produktionstechnik", field: eng}
+  - {match: "maschinenbau", field: eng}
+  - {match: "werkstoff", field: eng}
+  - {match: "elektrotechnik", field: eng}
+  - {match: "informatik", field: eng}
+  - {match: "bauwesen", field: eng}
+  - {match: "systemtechnik", field: eng}
+  - {match: "verfahrenstechnik", field: eng}
