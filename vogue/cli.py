@@ -28,35 +28,41 @@ def funnel(study_dir: str, source: str = typer.Option(...), term: str = typer.Op
 
 KEYMAP = {"t": Label.TROPE, "a": Label.ADJACENT, "h": Label.HOMONYM,
           "l": Label.LITERAL, "u": Label.UNSURE}
+LABEL_TO_KEY = {v: k for k, v in KEYMAP.items()}
 
 
 @app.command()
 def code(study_dir: str, source: str = typer.Option(...), term: str = typer.Option(...),
          coder: str = typer.Option("", help="name recorded with each coding"),
-         limit: int = typer.Option(None, help="cap records fetched (useful for huge OpenAlex result sets)")):
+         limit: int = typer.Option(None, help="cap records fetched")):
     """Interactively label discipline-filtered records as trope/adjacent/homonym/literal/unsure.
 
-    Idempotent: only records without an existing coding are surfaced.
+    Idempotent: only records without an existing coding are surfaced. If a suggestions file
+    exists (see `vogue suggest`), the machine suggestion is offered as the default.
     """
     study = Study.load(study_dir)
     records = pipeline.fetch_term(study, source, term, limit=limit)
     kept = pipeline.funnel_for_records(records, study.keep_fields).kept
     store = CodingStore(study.codings_dir / f"{term}.csv")
+    suggestions = SuggestionStore(study.codings_dir / f"{term}.suggestions.csv").load()
     already = store.coded_keys()
     todo = uncoded(kept, already)
     typer.echo(f"{len(todo)} new to code, {len(already)} already coded")
     today = datetime.date.today().isoformat()
     for r in todo:
+        sugg = suggestions.get(r.key)
         typer.echo(f"\n{r.year}  [{r.discipline_raw}]  {r.title}\n{r.url}")
-        ans = typer.prompt(
-            "label [t]rope [a]djacent [h]omonym [l]iteral [u]nsure [s]kip [q]uit"
-        ).strip().lower()
+        prompt = "label [t]rope [a]djacent [h]omonym [l]iteral [u]nsure [s]kip [q]uit"
+        if sugg is not None:
+            prompt += f"  (suggested: {sugg.suggested.value})"
+        default_key = LABEL_TO_KEY.get(sugg.suggested) if sugg is not None else ""
+        ans = typer.prompt(prompt, default=default_key).strip().lower()
         if ans == "q":
             break
         if ans == "s" or ans not in KEYMAP:
             continue
-        store.append(Coding(key=r.key, term=term, label=KEYMAP[ans],
-                            coder=coder, coded_at=today))
+        store.append(Coding(key=r.key, term=term, label=KEYMAP[ans], coder=coder,
+                            coded_at=today, suggested=sugg.suggested.value if sugg else ""))
     typer.echo("done")
 
 

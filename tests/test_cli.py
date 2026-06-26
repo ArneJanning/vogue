@@ -163,3 +163,25 @@ def test_suggest_writes_suggestions_idempotently(tmp_path, monkeypatch):
     res2 = runner.invoke(app, ["suggest", str(tmp_path), "--source", "gepris",
                                "--term", "repair", "--model", "fake"])
     assert "suggested 0" in res2.stdout
+
+
+def test_code_uses_suggestion_as_default(tmp_path, monkeypatch):
+    _study(tmp_path)
+    recs = [Record(source="gepris", id="0", title="t0", year=2020, discipline_raw="Ethnologie",
+                   field=Field.HUMANITIES, work_type="w", url="u")]
+    monkeypatch.setattr(pipeline, "fetch_term", lambda study, s, t, limit=None: recs)
+    codings_dir = tmp_path / "codings"
+    codings_dir.mkdir()
+    (codings_dir / "repair.suggestions.csv").write_text(
+        "key,term,suggested,model,suggested_at\n"
+        "gepris:0,repair,trope,fake,2026-06-26\n", encoding="utf-8")
+
+    # Press Enter to accept the suggested label
+    res = runner.invoke(app, ["code", str(tmp_path), "--source", "gepris", "--term", "repair"],
+                        input="\n")
+    assert res.exit_code == 0
+    assert "suggested: trope" in res.stdout
+    rows = list(_csv.DictReader((codings_dir / "repair.csv").open(encoding="utf-8")))
+    assert rows[0]["key"] == "gepris:0"
+    assert rows[0]["label"] == "trope"
+    assert rows[0]["suggested"] == "trope"   # model suggestion preserved as provenance
