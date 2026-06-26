@@ -1,4 +1,4 @@
-from vogue.coding import Label, Coding, CodingStore, uncoded
+from vogue.coding import Label, Coding, CodingStore, uncoded, Suggestion, SuggestionStore
 from vogue.model import Record, Field
 
 
@@ -29,3 +29,17 @@ def test_coded_keys(tmp_path):
 def test_uncoded_filters_by_key():
     recs = [_rec("1"), _rec("2"), _rec("3")]
     assert {r.id for r in uncoded(recs, {"gepris:2"})} == {"1", "3"}
+
+
+def test_suggestion_store_roundtrip(tmp_path):
+    store = SuggestionStore(tmp_path / "repair.suggestions.csv")
+    assert store.load() == {}
+    store.append(Suggestion(key="gepris:1", term="repair", suggested=Label.TROPE,
+                            model="google/gemini-2.0-flash-001", suggested_at="2026-06-26"))
+    store.append(Suggestion(key="openalex:W2", term="repair", suggested=Label.HOMONYM,
+                            model="m", suggested_at="2026-06-26"))
+    loaded = store.load()
+    assert loaded["gepris:1"].suggested is Label.TROPE
+    assert loaded["gepris:1"].model == "google/gemini-2.0-flash-001"
+    assert loaded["openalex:W2"].suggested is Label.HOMONYM
+    assert store.suggested_keys() == {"gepris:1", "openalex:W2"}

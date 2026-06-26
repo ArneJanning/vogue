@@ -64,3 +64,46 @@ class CodingStore:
 def uncoded(records: list[Record], coded_keys: set[str]) -> list[Record]:
     """Records whose key is not yet present in the coding store. Pure; drives idempotent coding."""
     return [r for r in records if r.key not in coded_keys]
+
+
+SUGGESTION_FIELDS = ["key", "term", "suggested", "model", "suggested_at"]
+
+
+@dataclass
+class Suggestion:
+    key: str
+    term: str
+    suggested: Label
+    model: str = ""
+    suggested_at: str = ""
+
+
+class SuggestionStore:
+    """Machine suggestions, kept separate from authoritative human codings."""
+
+    def __init__(self, path: Path):
+        self.path = Path(path)
+
+    def load(self) -> dict[str, Suggestion]:
+        if not self.path.exists():
+            return {}
+        out: dict[str, Suggestion] = {}
+        with self.path.open(encoding="utf-8", newline="") as f:
+            for row in csv.DictReader(f):
+                out[row["key"]] = Suggestion(
+                    key=row["key"], term=row["term"], suggested=Label(row["suggested"]),
+                    model=row.get("model", ""), suggested_at=row.get("suggested_at", ""))
+        return out
+
+    def append(self, s: Suggestion) -> None:
+        new = not self.path.exists()
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with self.path.open("a", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=SUGGESTION_FIELDS)
+            if new:
+                w.writeheader()
+            w.writerow({"key": s.key, "term": s.term, "suggested": s.suggested.value,
+                        "model": s.model, "suggested_at": s.suggested_at})
+
+    def suggested_keys(self) -> set[str]:
+        return set(self.load().keys())
