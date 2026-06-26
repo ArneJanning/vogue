@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Iterator
 import httpx
 from vogue.model import Record
@@ -73,7 +74,6 @@ class GeprisSource:
         return result_count(self._page(term, 0))
 
     def search(self, term: str) -> Iterator[Record]:
-        import time
         total = self.count(term)
         index = 0
         seen: set[str] = set()

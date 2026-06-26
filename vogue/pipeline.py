@@ -27,7 +27,9 @@ def _source_for(name: str, study: Study):
 def fetch_term(study: Study, source_name: str, term_name: str) -> list[Record]:
     """Fetch all records for one term from one source (cached)."""
     src = _source_for(source_name, study)
-    term = next(t for t in study.terms if t.name == term_name)
+    term = next((t for t in study.terms if t.name == term_name), None)
+    if term is None:
+        raise ValueError(f"unknown term: {term_name}")
     query = term.queries.get(source_name, term.name)
     return list(src.search(query))
 

@@ -5,10 +5,14 @@ from vogue.sources.gepris import parse_results, result_count
 FIX = Path(__file__).parent / "fixtures" / "gepris_repair_p0.html"
 
 
-def test_result_count_handles_thousands_separator():
+def test_result_count_parses_fixture():
     html = FIX.read_text(encoding="utf-8")
     n = result_count(html)
     assert isinstance(n, int) and n > 100
+
+
+def test_result_count_handles_thousands_separator():
+    assert result_count('data-result-count="1.234"') == 1234
 
 
 def test_parse_yields_aligned_records():
